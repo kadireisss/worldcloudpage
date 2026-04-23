@@ -54,6 +54,9 @@
       document.querySelectorAll('.modal-backdrop').forEach(function (el) {
         el.remove();
       });
+      document.querySelectorAll('.offcanvas-backdrop').forEach(function (el) {
+        el.remove();
+      });
       document.body.classList.remove('modal-open');
       document.body.style.removeProperty('overflow');
       document.body.style.removeProperty('padding-right');
@@ -74,8 +77,51 @@
     } catch (e3) {}
   }
 
+  /**
+   * Bazi eklentiler (veya yarim kalmis animasyonlar) viewport'u tamamen kaplayan
+   * fixed katman birakabiliyor. Gercek modal/swal yokken bu katmanlari devre disi birak.
+   */
+  function pzrNeutralizeUnknownBlockingLayers() {
+    try {
+      if (pzrModalLayerOpen() || pzrSwalOpen()) return;
+
+      var vw = window.innerWidth || document.documentElement.clientWidth || 0;
+      var vh = window.innerHeight || document.documentElement.clientHeight || 0;
+      if (!vw || !vh) return;
+
+      var all = document.body ? document.body.querySelectorAll('*') : [];
+      for (var i = 0; i < all.length; i++) {
+        var el = all[i];
+        if (!el || !el.getBoundingClientRect) continue;
+        if (el.classList && (el.classList.contains('modal') || el.classList.contains('modal-dialog'))) continue;
+        if (el.classList && (el.classList.contains('swal2-popup') || el.classList.contains('swal2-html-container'))) continue;
+
+        var cs = window.getComputedStyle(el);
+        if (!cs) continue;
+        if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+        if (cs.position !== 'fixed' && cs.position !== 'sticky') continue;
+        if (cs.pointerEvents === 'none') continue;
+
+        var z = parseInt(cs.zIndex, 10);
+        if (!isFinite(z) || z < 1040) continue;
+
+        var r = el.getBoundingClientRect();
+        if (r.width < vw * 0.9 || r.height < vh * 0.9) continue;
+        if (r.top > 4 || r.left > 4) continue;
+
+        // Uygulamamiz ana kokleri ve gercek icerik katmanlari asla devre disi birakma
+        if (el.id === 'pzrDashRoot') continue;
+        if (el.closest && (el.closest('#pzrDashRoot') || el.closest('.modal.show') || el.closest('.swal2-container'))) continue;
+
+        el.style.setProperty('pointer-events', 'none', 'important');
+        el.style.setProperty('opacity', '0', 'important');
+      }
+    } catch (e4) {}
+  }
+
   function pzrUnblockPointerOverlays() {
     pzrForceStaleOverlayCleanup();
+    pzrNeutralizeUnknownBlockingLayers();
   }
 
   window.pzrUnblockPointerOverlays = pzrUnblockPointerOverlays;
@@ -92,6 +138,7 @@
   setInterval(function () {
     if (pzrModalLayerOpen() || pzrSwalOpen()) return;
     pzrForceStaleOverlayCleanup();
+    pzrNeutralizeUnknownBlockingLayers();
   }, 4000);
 
   /* Ilk dokunusta backdrop / olu Swal konteyneri — tiklamayi yutan katman */

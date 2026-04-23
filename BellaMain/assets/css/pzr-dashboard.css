@@ -1057,32 +1057,15 @@ body.pzr-dash .modal.show .modal-dialog {
   pointer-events: auto !important;
 }
 
-/*
- * Backdrop: varsayilan tiklamayi yutma (Bootstrap yarim acilis / takili modal-open).
- * Gercek acik modal varken disari tikla-kapat yine calissin.
- */
+/* Backdrop kilitlenmesi clickleri tamamen olduruyordu; panelde daima pasif tut */
 body.pzr-dash .modal-backdrop {
-  pointer-events: none !important;
-}
-
-body.pzr-dash:has(.modal.show) .modal-backdrop {
-  pointer-events: auto !important;
-}
-
-/* :has desteklemeyen tarayicilar: backdrop body sonuna eklenir, acik modal ondedir */
-body.pzr-dash .modal.show ~ .modal-backdrop {
-  pointer-events: auto !important;
-}
-
-/* modal-open degilken kalan backdrop tamamen gizle */
-body.pzr-dash:not(.modal-open) .modal-backdrop {
   display: none !important;
   pointer-events: none !important;
   opacity: 0 !important;
 }
 
-/* Acik modal yokken modal-open kalintisi — scroll kilidi */
-body.pzr-dash:not(:has(.modal.show)).modal-open {
+/* modal-open kalintisi kalirsa sayfayi kilitlemesin */
+body.pzr-dash.modal-open {
   overflow: auto !important;
   padding-right: 0 !important;
 }
