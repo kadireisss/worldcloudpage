@@ -2212,10 +2212,6 @@ function first_listing_image($ilan_resim) {
 
             $("#il").on("change", function(){
                 $("#ilce").attr("disabled", false).html("<option value=''>Seçin..</option>");
-                ajaxFunc("il", $(this).val(), "#il");
-            });
-            $("#il").on("change", function(){
-                $("#ilce").attr("disabled", false).html("<option value=''>Seçin..</option>");
                 ajaxFunc("ilce", $(this).val(), "#ilce");
             });
 

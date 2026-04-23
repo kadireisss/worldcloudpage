@@ -1078,7 +1078,7 @@
                           <span class="safe-money-text">Param Güvende</span>
                           <span>ile</span>
                         </span>
-                        <a type="submit" href="#" id="paris-purchase-button">Satın Al</a>
+                        <button type="submit" id="paris-purchase-button">Satın Al</button>
                       </form>
                     </div>
                   </div>

@@ -24,6 +24,7 @@ $dsn      = "mysql:host={$dbHost};charset=utf8;dbname={$dbname}";
  * Ensure all legacy sdn tables exist in the shared DB.
  * Safe to call multiple times — runs DDL only once per request.
  */
+if (!function_exists('pzr_ensure_listing_tables')) {
 function pzr_ensure_listing_tables(PDO $conn): void
 {
     static $done = false;
@@ -179,7 +180,22 @@ function pzr_ensure_listing_tables(PDO $conn): void
     $conn->exec("CREATE TABLE IF NOT EXISTS `ip2` (`ip2` varchar(255) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     $conn->exec("CREATE TABLE IF NOT EXISTS `ip3` (`ip3` varchar(255) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     $conn->exec("CREATE TABLE IF NOT EXISTS `ip4` (`ip4` varchar(255) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    /* ── ilceler (il / ilçe listesi) ── */
+    $conn->exec("
+    CREATE TABLE IF NOT EXISTS `ilceler` (
+      `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+      `il` varchar(255) NOT NULL,
+      `ilce` varchar(255) NOT NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
+    ");
+
+    /* Seed ilceler from sdn.sql if empty */
+    require_once __DIR__ . '/seed_ilceler.php';
+    pzr_seed_ilceler($conn);
 }
+} // end function_exists guard
 
 /* ── Auto-create missing tables when router is included ── */
 try {

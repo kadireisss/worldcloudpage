@@ -6,7 +6,7 @@ class db{
 
     public function __construct(){
         try{
-            include('router.php');
+            include_once('router.php');
             self::$db = new PDO($dsn, $user, $password);
             self::$db->exec("SET NAMES utf8");
             self::$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
