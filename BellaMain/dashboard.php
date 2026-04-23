@@ -498,7 +498,7 @@ function kopyalaMetni2(id) {
   <script src="https://cdn.jsdelivr.net/npm/@form-validation/cjs/plugin-bootstrap5@2.4.0/index.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@form-validation/cjs/plugin-trigger@2.4.0/index.min.js"></script>
   <script src="<?php echo $pzrEsc(panzer_brand_public_path('assets/js/pzr-formvalidation-fallback.js')); ?>?v=1"></script>
-  <script src="<?php echo $pzrEsc(panzer_brand_public_path('assets/js/iller.js')); ?>"></script>
+  <script src="<?php echo $pzrEsc(panzer_brand_public_path('assets/js/iller.js')); ?>?v=2"></script>
   <?php panzer_brand_watermark(); ?>
    </body>
 </html>

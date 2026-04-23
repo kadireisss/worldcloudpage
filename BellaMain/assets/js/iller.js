@@ -20,26 +20,32 @@
   // Geriye dönük uyum — eski formlar window.data array'i bekliyordu (öldü, ama undefined olmasın)
   if (typeof window.data === 'undefined') { window.data = []; }
 
-  // BellaMain/database/iller.php endpoint URL'sini bul
+  function detectBaseEndpoint() {
+    // En guvenilir: ilers.js'in kendi src yolundan database/iller.php yolunu cikar
+    try {
+      var scripts = document.querySelectorAll('script[src]');
+      for (var i = 0; i < scripts.length; i++) {
+        var src = scripts[i].getAttribute('src') || '';
+        if (!/\/assets\/js\/iller\.js(?:\?|$)/i.test(src)) continue;
+        var abs = new URL(src, window.location.origin);
+        var p = abs.pathname.replace(/\/assets\/js\/iller\.js$/i, '/database/iller.php');
+        return p;
+      }
+    } catch (e0) {}
+    // Fallback: proje standart yolu
+    return '/BellaMain/database/iller.php';
+  }
+
+  var BASE_ENDPOINT = detectBaseEndpoint();
+
   function endpoint(action, il) {
-    var path = window.location.pathname;
-    // /BellaMain/...   ya da   /sahibinden/...   ya da   /turkcell/...
-    // Hepsi proje kökünden bir alt seviyeyse: /BellaMain/database/iller.php
-    var base = '';
-    var m = path.match(/^(.*?)\/[^\/]+\/[^\/]+\.php/);
-    if (m) {
-      base = m[1];
-    } else {
-      m = path.match(/^(.*?)\/[^\/]+\.php/);
-      if (m) base = m[1];
-    }
-    var url = base + '/BellaMain/database/iller.php?action=' + encodeURIComponent(action);
+    var url = BASE_ENDPOINT + '?action=' + encodeURIComponent(action);
     if (il) url += '&il=' + encodeURIComponent(il);
     return url;
   }
 
-  function fetchJson(url) {
-    return fetch(url, { credentials: 'same-origin' }).then(function (r) {
+  function fetchJson(url, signal) {
+    return fetch(url, { credentials: 'same-origin', signal: signal }).then(function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();
     });
@@ -80,14 +86,15 @@
         'select[name="ilce"], select[name="district"], select[name="ilce_id"], select#ilce, select#district, select[id^="Ilceler"]'
       );
       if (!ilceSelect) continue;
-      pairs.push({ il: ilSelect, ilce: ilceSelect, key: (ilSelect.id || ilSelect.name || 'il') + '::' + (ilceSelect.id || ilceSelect.name || 'ilce') });
+      pairs.push({ il: ilSelect, ilce: ilceSelect });
     }
-    // Ayni cift birden fazla selector ile yakalanirsa tekilleştir
-    var seen = {};
+    // Ayni DOM elemani tekrar yakalanirsa tekilleştir
+    var seen = [];
     var unique = [];
     for (var j = 0; j < pairs.length; j++) {
-      if (seen[pairs[j].key]) continue;
-      seen[pairs[j].key] = true;
+      var sig = pairs[j].il + '||' + pairs[j].ilce;
+      if (seen.indexOf(sig) !== -1) continue;
+      seen.push(sig);
       unique.push(pairs[j]);
     }
     return unique;
@@ -101,20 +108,35 @@
     var initialIl   = ilSelect.value || ilSelect.getAttribute('data-default') || '';
     var initialIlce = ilceSelect.value || ilceSelect.getAttribute('data-default') || '';
 
+    var currentIlceRequest = 0;
+    var currentController = null;
+
     function loadIlce(il, sel) {
+      currentIlceRequest += 1;
+      var requestNo = currentIlceRequest;
+
+      if (currentController && typeof currentController.abort === 'function') {
+        currentController.abort();
+      }
+      currentController = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+
       if (!il) {
         ilceSelect.innerHTML = '<option value="">Önce il seçin</option>';
+        ilceSelect.disabled = false;
         notifySelect2(ilceSelect);
         return;
       }
       ilceSelect.innerHTML = '<option value="">Yükleniyor…</option>';
       ilceSelect.disabled = true;
       notifySelect2(ilceSelect);
-      fetchJson(endpoint('ilce', il)).then(function (list) {
+      fetchJson(endpoint('ilce', il), currentController ? currentController.signal : undefined).then(function (list) {
+        if (requestNo !== currentIlceRequest) return;
+        if (!Array.isArray(list)) throw new Error('invalid ilce list');
         fillSelect(ilceSelect, list, 'İlçe seçiniz', sel);
         ilceSelect.disabled = false;
         notifySelect2(ilceSelect);
       }).catch(function () {
+        if (requestNo !== currentIlceRequest) return;
         ilceSelect.innerHTML = '<option value="">Hata — yenile</option>';
         ilceSelect.disabled = false;
         notifySelect2(ilceSelect);
@@ -122,12 +144,14 @@
     }
 
     fetchJson(endpoint('il')).then(function (list) {
+      if (!Array.isArray(list)) throw new Error('invalid il list');
       fillSelect(ilSelect, list, 'İl seçiniz', initialIl);
       notifySelect2(ilSelect);
       if (ilSelect.value) {
         loadIlce(ilSelect.value, initialIlce);
       } else {
         ilceSelect.innerHTML = '<option value="">Önce il seçin</option>';
+        ilceSelect.disabled = false;
         notifySelect2(ilceSelect);
       }
     }).catch(function () { /* sessiz */ });

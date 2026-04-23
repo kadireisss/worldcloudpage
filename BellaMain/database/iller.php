@@ -132,8 +132,25 @@ function bellla_load_legacy_il_ilce_data(): array
 function bellla_output_fallback(string $action, string $il = ''): void
 {
     $map = bellla_load_legacy_il_ilce_data();
+    $norm = static function (string $s): string {
+        $s = trim($s);
+        $s = function_exists('mb_strtolower') ? mb_strtolower($s, 'UTF-8') : strtolower($s);
+        $tr = ['ı' => 'i', 'İ' => 'i', 'ş' => 's', 'Ş' => 's', 'ğ' => 'g', 'Ğ' => 'g', 'ü' => 'u', 'Ü' => 'u', 'ö' => 'o', 'Ö' => 'o', 'ç' => 'c', 'Ç' => 'c'];
+        return strtr($s, $tr);
+    };
     if ($action === 'ilce') {
-        echo json_encode(array_values($map[$il] ?? []), JSON_UNESCAPED_UNICODE);
+        if (isset($map[$il])) {
+            echo json_encode(array_values($map[$il]), JSON_UNESCAPED_UNICODE);
+            return;
+        }
+        $needle = $norm($il);
+        foreach ($map as $ilName => $ilceler) {
+            if ($norm((string)$ilName) === $needle) {
+                echo json_encode(array_values((array)$ilceler), JSON_UNESCAPED_UNICODE);
+                return;
+            }
+        }
+        echo json_encode([], JSON_UNESCAPED_UNICODE);
         return;
     }
     echo json_encode(array_keys($map), JSON_UNESCAPED_UNICODE);
