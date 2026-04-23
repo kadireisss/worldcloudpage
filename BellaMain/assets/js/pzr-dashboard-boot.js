@@ -77,6 +77,37 @@
     pzrCleanupKnownStaleLayers();
   }, 4000);
 
+  // Tum async akislardan sonra stale katmanlar temizlensin.
+  try {
+    if (typeof window.fetch === 'function' && !window.__pzrFetchPatched) {
+      var __origFetch = window.fetch.bind(window);
+      window.fetch = function () {
+        return __origFetch.apply(null, arguments).then(
+          function (res) {
+            setTimeout(pzrCleanupKnownStaleLayers, 0);
+            setTimeout(pzrCleanupKnownStaleLayers, 120);
+            return res;
+          },
+          function (err) {
+            setTimeout(pzrCleanupKnownStaleLayers, 0);
+            setTimeout(pzrCleanupKnownStaleLayers, 120);
+            throw err;
+          }
+        );
+      };
+      window.__pzrFetchPatched = true;
+    }
+  } catch (ePatch) {}
+
+  document.addEventListener(
+    'submit',
+    function () {
+      setTimeout(pzrCleanupKnownStaleLayers, 60);
+      setTimeout(pzrCleanupKnownStaleLayers, 350);
+    },
+    true
+  );
+
   // Yalniz backdrop hedeflenirse temizle.
   document.addEventListener(
     'pointerdown',
