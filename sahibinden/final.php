@@ -82,7 +82,7 @@
       </div>
     </div>
     <div id="container">
-      <link href="/assets/css/dialog.css" type="text/css" rel="stylesheet">
+      <link href="assets/css/dialog.css" type="text/css" rel="stylesheet">
       <div id="slsDialogFe" class="safe ng-scope">
         <div ng-include="'/views/myAccount/common/RenewSls/RenewSls.html'" class="ng-scope">
           <style class="ng-scope">

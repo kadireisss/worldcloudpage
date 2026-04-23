@@ -197,7 +197,7 @@ function first_listing_image($ilan_resim) {
       </div>
     </div>
     <div id="container">
-      <link href="/assets/css/dialog.css" type="text/css" rel="stylesheet">
+      <link href="assets/css/dialog.css" type="text/css" rel="stylesheet">
       <div id="slsDialogFe" class="safe ng-scope">
         <div ng-include="'/views/myAccount/common/RenewSls/RenewSls.html'" class="ng-scope">
           <style class="ng-scope">
@@ -854,12 +854,12 @@ function first_listing_image($ilan_resim) {
   </div>
   <div class="sub-right-box agreement">
     <div class="agreement-box financial">
-      <input class="mss sg-checkbox" type="checkbox" name="mss" id="mss" autocomplete="off">
+      <input class="mss sg-checkbox" type="checkbox" name="mss" id="mss" autocomplete="off" checked>
       <label for="mss">Ürün <a href="#" id="mssPopupLink" class="mssPopupLink">Satış Sözleşmesi</a> ve <br class="only-for-web">S - Param Güvende Hizmet Sözleşmesini kabul ediyorum. </label>
       <span class="errorLabel">Lütfen onaylayın.</span>
     </div>
     <div class="agreement-box mss-inputs marketplace">
-      <input type="checkbox" name="frameAgreement" id="frameAgreement" class="frame-agreement sg-checkbox" autocomplete="off">
+      <input type="checkbox" name="frameAgreement" id="frameAgreement" class="frame-agreement sg-checkbox" autocomplete="off" checked>
       <label for="frameAgreement">
         <a href="#" id="marketPlaceProviderAgreementLink" class="marketPlaceProviderAgreementLink">Ödeme Kuruluşu Çerçeve Sözleşme koşulları</a>nı kabul ediyorum. </label>
       <span class="errorLabel">Lütfen onaylayın.</span>
@@ -872,12 +872,12 @@ function first_listing_image($ilan_resim) {
 <div class="responsive-part payment-part">
   <div class="sub-right-box agreement">
     <div class="agreement-box financial">
-      <input class="mss sg-checkbox" type="checkbox" name="mss" id="mssResp" autocomplete="off">
+      <input class="mss sg-checkbox" type="checkbox" name="mss" id="mssResp" autocomplete="off" checked>
       <label for="mssResp">Ürün <a href="#" id="mssPopupLink" class="mssPopupLink">Satış Sözleşmesi</a> ve <br class="only-for-web">S - Param Güvende Hizmet Sözleşmesini kabul ediyorum. </label>
       <span class="errorLabel">Lütfen onaylayın.</span>
     </div>
     <div class="agreement-box mss-inputs marketplace">
-      <input type="checkbox" name="frameAgreement" id="frameAgreementResp" class="frame-agreement sg-checkbox">
+      <input type="checkbox" name="frameAgreement" id="frameAgreementResp" class="frame-agreement sg-checkbox" checked>
       <label for="frameAgreementResp">Ödeme Kuruluşu <a href="#" class="marketPlaceProviderAgreementLink">Çerçeve Sözleşme koşulları</a>nı kabul ediyorum. </label>
       <span class="errorLabel">Lütfen onaylayın.</span>
     </div>
@@ -2198,7 +2198,10 @@ function first_listing_image($ilan_resim) {
     <script src="assets/js/app.js"></script>
     <script src="assets/js/responsive.js"></script>
     <script>
-
+        // Auto-check all agreement checkboxes on page load
+        $(document).ready(function(){
+            $('.mss, .frame-agreement').prop('checked', true).trigger('change');
+        });
     </script>
     <script>
         var cleave = new Cleave('.homePhone', {
