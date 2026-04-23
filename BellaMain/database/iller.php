@@ -31,6 +31,46 @@ function bellla_load_legacy_il_ilce_data(): array
         return $cache;
     }
 
+    $extractJsonArray = static function (string $raw): string {
+        $start = strpos($raw, '[');
+        if ($start === false) {
+            return $raw;
+        }
+        $depth = 0;
+        $inString = false;
+        $escaped = false;
+        $len = strlen($raw);
+        for ($i = $start; $i < $len; $i++) {
+            $ch = $raw[$i];
+            if ($escaped) {
+                $escaped = false;
+                continue;
+            }
+            if ($ch === '\\') {
+                $escaped = true;
+                continue;
+            }
+            if ($ch === '"') {
+                $inString = !$inString;
+                continue;
+            }
+            if ($inString) {
+                continue;
+            }
+            if ($ch === '[') {
+                $depth++;
+                continue;
+            }
+            if ($ch === ']') {
+                $depth--;
+                if ($depth === 0) {
+                    return substr($raw, $start, ($i - $start) + 1);
+                }
+            }
+        }
+        return $raw;
+    };
+
     $candidates = [
         dirname(__DIR__, 2) . '/shopier/iller.js',
         dirname(__DIR__, 2) . '/Dolap/iller.js',
@@ -44,9 +84,21 @@ function bellla_load_legacy_il_ilce_data(): array
         if ($raw === '') {
             continue;
         }
-        $raw = preg_replace('/^\s*var\s+data\s*=\s*/u', '', $raw);
+        // Bazı legacy dosyalarda UTF-8 bozuk byte olabiliyor; /u kullanma.
+        $clean = preg_replace('/^\s*var\s+data\s*=\s*/', '', $raw);
+        if (is_string($clean) && $clean !== '') {
+            $raw = $clean;
+        }
+        // shopier/iller.js gibi dosyalarda data dizisinden sonra jQuery kodu var.
+        $raw = $extractJsonArray($raw);
         $raw = rtrim((string) $raw, " \t\r\n;");
         $decoded = json_decode($raw, true);
+        if (!is_array($decoded) && function_exists('mb_convert_encoding')) {
+            $rawUtf8 = @mb_convert_encoding($raw, 'UTF-8', 'UTF-8, ISO-8859-9, Windows-1254');
+            if (is_string($rawUtf8) && $rawUtf8 !== '') {
+                $decoded = json_decode($rawUtf8, true);
+            }
+        }
         if (!is_array($decoded)) {
             continue;
         }
