@@ -11,6 +11,21 @@
    */
   function pzrCleanupKnownStaleLayers() {
     try {
+      // Gorunmez ama .show kalan modallari dusur
+      document.querySelectorAll('.modal.show').forEach(function (m) {
+        var stale = m.getAttribute('aria-hidden') === 'true';
+        if (!stale) {
+          var cs = window.getComputedStyle(m);
+          stale = !cs || cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity || 1) < 0.05;
+        }
+        if (stale) {
+          m.classList.remove('show');
+          m.style.display = 'none';
+          m.setAttribute('aria-hidden', 'true');
+          m.removeAttribute('aria-modal');
+        }
+      });
+
       document.querySelectorAll('.modal-backdrop, .offcanvas-backdrop').forEach(function (el) {
         if (!document.querySelector('.modal.show, .offcanvas.show')) {
           el.remove();
@@ -24,9 +39,23 @@
       }
 
       var swalContainer = document.querySelector('.swal2-container');
-      if (swalContainer && typeof Swal !== 'undefined' && typeof Swal.isVisible === 'function' && !Swal.isVisible()) {
-        swalContainer.remove();
-        document.body.classList.remove('swal2-shown', 'swal2-height-auto');
+      if (swalContainer) {
+        var removeSwal = false;
+        if (typeof Swal !== 'undefined' && typeof Swal.isVisible === 'function') {
+          removeSwal = !Swal.isVisible();
+        } else {
+          var popup = swalContainer.querySelector('.swal2-popup');
+          if (!popup) {
+            removeSwal = true;
+          } else {
+            var ps = window.getComputedStyle(popup);
+            removeSwal = !ps || ps.display === 'none' || ps.visibility === 'hidden' || Number(ps.opacity || 1) < 0.05;
+          }
+        }
+        if (removeSwal) {
+          swalContainer.remove();
+          document.body.classList.remove('swal2-shown', 'swal2-height-auto');
+        }
       }
     } catch (e0) {}
   }
