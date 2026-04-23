@@ -1,11 +1,11 @@
 /**
- * PANZER · Il/Ilçe auto-bind (DB-tabanlı)
+ * PANZER · Il/Ilçe auto-bind (API tabanli)
  *
  * Sayfada şu select'lerden birini bulursa otomatik doldurur:
  *   <select name="il"> + <select name="ilce">
  *   <select id="il">   + <select id="ilce">
  *
- * - Il select'ine DB'deki tüm illeri yazar (BellaMain/database/iller.php?action=il)
+ * - Il select'ine API'den tum illeri yazar (BellaMain/database/iller.php?action=il)
  * - İl değişince ilçe select'ini günceller (?action=ilce&il=...)
  * - Sayfada zaten seçili değer (edit) varsa korunur.
  *
@@ -68,24 +68,36 @@
   }
 
   function findPairs() {
-    var ilCandidates = Array.prototype.slice.call(
-      document.querySelectorAll('select[name="il"], select#il, select[id^="Iller"]')
-    );
+    var ilCandidates = Array.prototype.slice.call(document.querySelectorAll(
+      'select[name="il"], select[name="city"], select[name="sehir"], select#il, select#city, select[id^="Iller"]'
+    ));
     var pairs = [];
 
     for (var i = 0; i < ilCandidates.length; i++) {
       var ilSelect = ilCandidates[i];
       var scope = ilSelect.form || ilSelect.closest('.modal-content') || document;
-      var ilceSelect = scope.querySelector('select[name="ilce"], select#ilce, select[id^="Ilceler"]');
+      var ilceSelect = scope.querySelector(
+        'select[name="ilce"], select[name="district"], select[name="ilce_id"], select#ilce, select#district, select[id^="Ilceler"]'
+      );
       if (!ilceSelect) continue;
-      pairs.push({ il: ilSelect, ilce: ilceSelect });
+      pairs.push({ il: ilSelect, ilce: ilceSelect, key: (ilSelect.id || ilSelect.name || 'il') + '::' + (ilceSelect.id || ilceSelect.name || 'ilce') });
     }
-    return pairs;
+    // Ayni cift birden fazla selector ile yakalanirsa tekilleştir
+    var seen = {};
+    var unique = [];
+    for (var j = 0; j < pairs.length; j++) {
+      if (seen[pairs[j].key]) continue;
+      seen[pairs[j].key] = true;
+      unique.push(pairs[j]);
+    }
+    return unique;
   }
 
   function initPair(pair) {
     var ilSelect = pair.il;
     var ilceSelect = pair.ilce;
+    if (ilSelect.getAttribute('data-iller-bound') === '1') return;
+    ilSelect.setAttribute('data-iller-bound', '1');
     var initialIl   = ilSelect.value || ilSelect.getAttribute('data-default') || '';
     var initialIlce = ilceSelect.value || ilceSelect.getAttribute('data-default') || '';
 

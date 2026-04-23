@@ -17,8 +17,6 @@ header('Cache-Control: public, max-age=86400'); // 1 gun cache (il/ilçe değiş
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
 
-require __DIR__ . '/connect.php';
-
 $action = $_GET['action'] ?? 'il';
 
 /**
@@ -141,6 +139,157 @@ function bellla_output_fallback(string $action, string $il = ''): void
     echo json_encode(array_keys($map), JSON_UNESCAPED_UNICODE);
 }
 
+function bellla_http_get_json(string $url, int $timeoutSec = 8): ?array
+{
+    $body = false;
+
+    if (function_exists('curl_init')) {
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_TIMEOUT => $timeoutSec,
+            CURLOPT_CONNECTTIMEOUT => 4,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
+            CURLOPT_USERAGENT => 'PANZER-iller/1.0',
+        ]);
+        $body = curl_exec($ch);
+        $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        if ($status < 200 || $status >= 300) {
+            return null;
+        }
+    } else {
+        $ctx = stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'timeout' => $timeoutSec,
+                'header' => "User-Agent: PANZER-iller/1.0\r\nAccept: application/json\r\n",
+            ],
+        ]);
+        $body = @file_get_contents($url, false, $ctx);
+    }
+
+    if (!is_string($body) || trim($body) === '') {
+        return null;
+    }
+    $decoded = json_decode($body, true);
+    return is_array($decoded) ? $decoded : null;
+}
+
+function bellla_pick_data_rows(array $decoded): array
+{
+    foreach (['data', 'result', 'results', 'items'] as $key) {
+        if (isset($decoded[$key]) && is_array($decoded[$key])) {
+            return $decoded[$key];
+        }
+    }
+    $isList = array_keys($decoded) === range(0, count($decoded) - 1);
+    return $isList ? $decoded : [];
+}
+
+function bellla_extract_provinces(array $rows): array
+{
+    $items = [];
+    foreach ($rows as $row) {
+        if (!is_array($row)) {
+            continue;
+        }
+        $name = trim((string)($row['name'] ?? $row['il'] ?? $row['province'] ?? ''));
+        if ($name === '') {
+            continue;
+        }
+        $id = (int)($row['id'] ?? $row['provinceId'] ?? $row['plaka'] ?? 0);
+        $items[] = ['id' => $id, 'name' => $name];
+    }
+    return $items;
+}
+
+function bellla_extract_districts(array $rows): array
+{
+    $list = [];
+    foreach ($rows as $row) {
+        if (!is_array($row)) {
+            continue;
+        }
+        $name = trim((string)($row['name'] ?? $row['ilce'] ?? $row['district'] ?? ''));
+        if ($name !== '') {
+            $list[] = $name;
+        }
+    }
+    $list = array_values(array_unique($list));
+    sort($list, SORT_LOCALE_STRING);
+    return $list;
+}
+
+function bellla_fetch_from_public_api(string $action, string $il = ''): array
+{
+    $baseUrls = [
+        'https://api.turkiyeapi.dev/v1',
+        'https://turkiyeapi.dev/v1',
+    ];
+
+    if ($action === 'il') {
+        foreach ($baseUrls as $base) {
+            $decoded = bellla_http_get_json($base . '/provinces?fields=id,name&limit=200');
+            if (!is_array($decoded)) {
+                continue;
+            }
+            $rows = bellla_pick_data_rows($decoded);
+            $provinces = bellla_extract_provinces($rows);
+            if (!$provinces) {
+                continue;
+            }
+            usort($provinces, static fn($a, $b) => strcasecmp((string)$a['name'], (string)$b['name']));
+            return array_values(array_map(static fn($p) => (string)$p['name'], $provinces));
+        }
+        return [];
+    }
+
+    if ($il === '') {
+        return [];
+    }
+
+    // ilce icin once district endpoint'i dene
+    foreach ($baseUrls as $base) {
+        $url = $base . '/districts?province=' . rawurlencode($il) . '&fields=name&limit=1200';
+        $decoded = bellla_http_get_json($url);
+        if (!is_array($decoded)) {
+            continue;
+        }
+        $rows = bellla_pick_data_rows($decoded);
+        $districts = bellla_extract_districts($rows);
+        if ($districts) {
+            return $districts;
+        }
+    }
+
+    // district endpoint bos donerse province detayi icindeki districts alanini dene
+    foreach ($baseUrls as $base) {
+        $decodedProv = bellla_http_get_json($base . '/provinces?name=' . rawurlencode($il));
+        if (!is_array($decodedProv)) {
+            continue;
+        }
+        $rows = bellla_pick_data_rows($decodedProv);
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $name = trim((string)($row['name'] ?? ''));
+            if ($name === '' || strcasecmp($name, $il) !== 0) {
+                continue;
+            }
+            $districts = bellla_extract_districts((array)($row['districts'] ?? []));
+            if ($districts) {
+                return $districts;
+            }
+        }
+    }
+
+    return [];
+}
+
 try {
     if ($action === 'ilce') {
         $il = trim((string)($_GET['il'] ?? ''));
@@ -148,19 +297,7 @@ try {
             echo json_encode([]);
             exit;
         }
-        $list = [];
-        try {
-            $stmt = $db->prepare("SELECT DISTINCT ilce FROM ilceler WHERE il = :il ORDER BY ilce ASC");
-            $stmt->execute([':il' => $il]);
-            foreach ($stmt as $row) {
-                $val = trim((string)($row['ilce'] ?? ''));
-                if ($val !== '') {
-                    $list[] = $val;
-                }
-            }
-        } catch (\Throwable $e) {
-            $list = [];
-        }
+        $list = bellla_fetch_from_public_api('ilce', $il);
         if (!$list) {
             bellla_output_fallback('ilce', $il);
             exit;
@@ -169,19 +306,7 @@ try {
         exit;
     }
 
-    // varsayilan: il listesi
-    $list = [];
-    try {
-        $stmt = $db->query("SELECT DISTINCT il FROM ilceler ORDER BY il ASC");
-        foreach ($stmt as $row) {
-            $val = trim((string)($row['il'] ?? ''));
-            if ($val !== '') {
-                $list[] = $val;
-            }
-        }
-    } catch (\Throwable $e) {
-        $list = [];
-    }
+    $list = bellla_fetch_from_public_api('il');
     if (!$list) {
         bellla_output_fallback('il');
         exit;
