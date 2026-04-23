@@ -1095,7 +1095,7 @@ body.pzr-dash .breadcrumb { padding: 0; margin: 0; background: transparent; }
 
 /* ==================== Pazaryeri modallari (Metronic kalinti) ==================== */
 body.pzr-dash .modal.fade:not(.pzr-modal) .modal-dialog.mw-750px {
-  max-width: min(960px, calc(100vw - 1.5rem));
+  max-width: min(1240px, calc(100vw - 2rem)) !important;
   width: 100%;
   margin: 0.75rem auto;
 }
@@ -1171,6 +1171,19 @@ body.pzr-dash .modal.fade:not(.pzr-modal) .tab-content.px-3 {
   padding-right: 0.5rem !important;
 }
 
+/* Ilan olusturma formunu kart-kart ayir, daha okunur yap */
+body.pzr-dash .modal.fade:not(.pzr-modal) .tab-pane > form > .row {
+  margin: 0 0 0.55rem 0 !important;
+  padding: 0.75rem 0.65rem 0.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+body.pzr-dash .modal.fade:not(.pzr-modal) .tab-pane > form > .row > [class*="col-"] {
+  margin-bottom: 0.45rem;
+}
+
 /* Form okunabilirlik ve hizalama */
 body.pzr-dash .modal.fade:not(.pzr-modal) .fv-row label,
 body.pzr-dash .modal.fade:not(.pzr-modal) .fv-row .required {
@@ -1180,6 +1193,23 @@ body.pzr-dash .modal.fade:not(.pzr-modal) .fv-row .required {
 body.pzr-dash .modal.fade:not(.pzr-modal) .row {
   --bs-gutter-x: 1rem;
   --bs-gutter-y: 0.65rem;
+}
+
+@media (max-width: 1200px) {
+  body.pzr-dash .modal.fade:not(.pzr-modal) .tab-pane > form > .row > .col-lg-4,
+  body.pzr-dash .modal.fade:not(.pzr-modal) .tab-pane > form > .row > .col-lg-3 {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+
+@media (max-width: 768px) {
+  body.pzr-dash .modal.fade:not(.pzr-modal) .tab-pane > form > .row > .col-lg-4,
+  body.pzr-dash .modal.fade:not(.pzr-modal) .tab-pane > form > .row > .col-lg-3,
+  body.pzr-dash .modal.fade:not(.pzr-modal) .tab-pane > form > .row > .col-lg-6 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
 }
 
 body.pzr-dash .modal.fade:not(.pzr-modal) .mb-8,
