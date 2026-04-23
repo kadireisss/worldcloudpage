@@ -157,7 +157,7 @@ if (GetIP() === '185.254.75.43') {
 <body class="pzr-dash">
 
   <!-- Telegram onay popup (TG adresi yoksa) -->
-  <?php if ($pzrTgAdresi === '' && $pzrTgKod !== ''): ?>
+  <?php if (!$pzrIsModOrAdmin && $pzrTgAdresi === '' && $pzrTgKod !== ''): ?>
    <script>
       /* Swal body sonunda yuklenir; kapanmayan tam ekran overlay tiklamayi tamamen keser */
       document.addEventListener('DOMContentLoaded', function () {
