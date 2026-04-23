@@ -150,8 +150,39 @@ if (!hasDemo($db, "SELECT COUNT(*) FROM ilan_dolap WHERE urunadi LIKE '%{$mark}%
 
 // --- ilan_sahibinden ---
 if (!hasDemo($db, "SELECT COUNT(*) FROM ilan_sahibinden WHERE urunadi LIKE '%{$mark}%'")) {
-    $db->prepare("INSERT INTO ilan_sahibinden (ekleyen,ilandurum,kartibanselect,selectgiris,urunadi,adsoyad,aciklama,ilantarihi,ilanno,telno,kimden,durumu,urunfiyati,komisyon,il,ilce,mahalle,kat1,kat2,ozellik_ad,ozellik_deger,resim1,resim2,resim3,resim4,resim5,dekont) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
-        ->execute([$ek, '1', 'Hayır', 'Hayır', "{$mark} Sahibinden", 'Demo', 'Demo ilan', '19.04.2026', '10000001', '05000000000', 'Sahibinden', 'İkinci El', '8.900', '0', 'İstanbul', 'Kadıköy', 'Merkez', 'Elektronik', 'Telefon', '', '', $f1, $f2, $f3, $f4, $f1, '']);
+    $db->prepare("INSERT INTO ilan_sahibinden
+        (ekleyen,ilandurum,kartibanselect,selectgiris,urunadi,adsoyad,aciklama,ilantarihi,ilanno,telno,kimden,durumu,urunfiyati,komisyon,il,ilce,mahalle,kat1,kat2,ozellik_ad,ozellik_deger,resim1,resim2,resim3,resim4,resim5,dekont)
+        VALUES
+        (:ekleyen,:ilandurum,:kartibanselect,:selectgiris,:urunadi,:adsoyad,:aciklama,:ilantarihi,:ilanno,:telno,:kimden,:durumu,:urunfiyati,:komisyon,:il,:ilce,:mahalle,:kat1,:kat2,:ozellik_ad,:ozellik_deger,:resim1,:resim2,:resim3,:resim4,:resim5,:dekont)")
+        ->execute([
+            ':ekleyen' => $ek,
+            ':ilandurum' => '1',
+            ':kartibanselect' => 'Hayır',
+            ':selectgiris' => 'Hayır',
+            ':urunadi' => "{$mark} Sahibinden",
+            ':adsoyad' => 'Demo',
+            ':aciklama' => 'Demo ilan',
+            ':ilantarihi' => '19.04.2026',
+            ':ilanno' => '10000001',
+            ':telno' => '05000000000',
+            ':kimden' => 'Sahibinden',
+            ':durumu' => 'İkinci El',
+            ':urunfiyati' => '8.900',
+            ':komisyon' => '0',
+            ':il' => 'İstanbul',
+            ':ilce' => 'Kadıköy',
+            ':mahalle' => 'Merkez',
+            ':kat1' => 'Elektronik',
+            ':kat2' => 'Telefon',
+            ':ozellik_ad' => '',
+            ':ozellik_deger' => '',
+            ':resim1' => $f1,
+            ':resim2' => $f2,
+            ':resim3' => $f3,
+            ':resim4' => $f4,
+            ':resim5' => $f1,
+            ':dekont' => '',
+        ]);
     echo "ilan_sahibinden eklendi.\n";
 } else {
     echo "ilan_sahibinden demo zaten var.\n";
@@ -159,8 +190,38 @@ if (!hasDemo($db, "SELECT COUNT(*) FROM ilan_sahibinden WHERE urunadi LIKE '%{$m
 
 // --- ilan_letgo ---
 if (!hasDemo($db, "SELECT COUNT(*) FROM ilan_letgo WHERE urunadi LIKE '%{$mark}%'")) {
-    $db->prepare("INSERT INTO ilan_letgo (ekleyen,ilandurum,kartibanselect,selectgiris,urunadi,adsoyad,urunfiyati,ilantarihi,ilanno,aciklama,il,ilce,kat1,kat2,kategori1,kategori2,kategori3,kategori4,resim1,resim2,resim3,resim4,resim5,resim6,saticipp,dekont) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
-        ->execute([$ek, '1', 'Hayır', 'Hayır', "{$mark} Letgo", 'Demo', '4.200', '19 Nis', '5000000001', 'Demo', 'Ankara', 'Çankaya', 'Elektronik', 'Tablet', 'Apple', 'iPad', '10', 'Gri', $f1, $f2, $f3, $f4, $f1, '', '']);
+    $db->prepare("INSERT INTO ilan_letgo
+        (ekleyen,ilandurum,kartibanselect,selectgiris,urunadi,adsoyad,urunfiyati,ilantarihi,ilanno,aciklama,il,ilce,kat1,kat2,kategori1,kategori2,kategori3,kategori4,resim1,resim2,resim3,resim4,resim5,resim6,saticipp,dekont)
+        VALUES
+        (:ekleyen,:ilandurum,:kartibanselect,:selectgiris,:urunadi,:adsoyad,:urunfiyati,:ilantarihi,:ilanno,:aciklama,:il,:ilce,:kat1,:kat2,:kategori1,:kategori2,:kategori3,:kategori4,:resim1,:resim2,:resim3,:resim4,:resim5,:resim6,:saticipp,:dekont)")
+        ->execute([
+            ':ekleyen' => $ek,
+            ':ilandurum' => '1',
+            ':kartibanselect' => 'Hayır',
+            ':selectgiris' => 'Hayır',
+            ':urunadi' => "{$mark} Letgo",
+            ':adsoyad' => 'Demo',
+            ':urunfiyati' => '4.200',
+            ':ilantarihi' => '19 Nis',
+            ':ilanno' => '5000000001',
+            ':aciklama' => 'Demo',
+            ':il' => 'Ankara',
+            ':ilce' => 'Çankaya',
+            ':kat1' => 'Elektronik',
+            ':kat2' => 'Tablet',
+            ':kategori1' => 'Apple',
+            ':kategori2' => 'iPad',
+            ':kategori3' => '10',
+            ':kategori4' => 'Gri',
+            ':resim1' => $f1,
+            ':resim2' => $f2,
+            ':resim3' => $f3,
+            ':resim4' => $f4,
+            ':resim5' => $f1,
+            ':resim6' => '',
+            ':saticipp' => '',
+            ':dekont' => '',
+        ]);
     echo "ilan_letgo eklendi.\n";
 } else {
     echo "ilan_letgo demo zaten var.\n";
