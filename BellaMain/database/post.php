@@ -73,9 +73,10 @@ if (isset($_POST['oturumacgiris'])) {
 }
 
 if (isset($_POST['kayitol'])) {
-    $kullaniciadi = htmlspecialchars($_POST['kul_id']);
-    $sifre = htmlspecialchars($_POST['kul_sifre']);
-    $refkod = htmlspecialchars($_POST['ref_kod']);
+    $kullaniciadi = trim((string)($_POST['kul_id'] ?? ''));
+    $sifre = (string)($_POST['kul_sifre'] ?? '');
+    $sifreTekrar = (string)($_POST['confirm-password'] ?? '');
+    $refkod = strtoupper(trim((string)($_POST['ref_kod'] ?? '')));
 
     function randomKodUret() {
         $karakterler = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -88,9 +89,20 @@ if (isset($_POST['kayitol'])) {
         return $kod;
     }
 
-    if ($kullaniciadi == "" or $sifre == "" or $refkod == "") {
+    if ($kullaniciadi === '' || $sifre === '' || $refkod === '') {
         echo json_encode(array("sonuc" => "bos"));
-    } else {
+        exit;
+    }
+    if ($sifreTekrar !== '' && !hash_equals($sifre, $sifreTekrar)) {
+        echo json_encode(array("sonuc" => "eslesmiyor"));
+        exit;
+    }
+    if (!preg_match('/^[A-Za-z0-9_]{3,32}$/', $kullaniciadi)) {
+        echo json_encode(array("sonuc" => "gecersiz_kullaniciadi"));
+        exit;
+    }
+
+    try {
         $refKontrol = $db->prepare("SELECT * FROM refkodlari WHERE ref_code=?");
         $refKontrol->execute(array($refkod));
         $refVarMi = $refKontrol->fetch();
@@ -122,6 +134,9 @@ if (isset($_POST['kayitol'])) {
             echo json_encode(array("sonuc" => "tamam"));
             exit;
         }
+    } catch (\Throwable $e) {
+        echo json_encode(array("sonuc" => "yanlis"));
+        exit;
     }
 }
 
@@ -553,7 +568,8 @@ if (isset($_POST['pttkargoduzenle'])) {
 
 if (isset($_POST['refekle'])) {
 	if($_SESSION['is_rol'] != 'admin'){
-		die('siktirlan');
+		echo json_encode(array("sonuc" => "yetkisiz"));
+		exit;
 	}
 	$ref_code = htmlspecialchars($_POST['ref_id']);
 
@@ -581,7 +597,8 @@ if (isset($_POST['refekle'])) {
 
 if (isset($_POST['userduzenle'])) {
 	if($_SESSION['is_rol'] != 'admin'){
-		die('siktirlan');
+		echo json_encode(array("sonuc" => "yetkisiz"));
+		exit;
 	}
 	$bakiye = htmlspecialchars($_POST['bakiye']);
 	$k_rol = htmlspecialchars($_POST['k_rol']);

@@ -214,6 +214,10 @@ $pzrEsc = static fn($v) => htmlspecialchars((string)($v ?? ''), ENT_QUOTES, 'UTF
               Swal.fire({ text: 'Bu kullanıcı adı zaten alınmış.', icon: 'warning', buttonsStyling: false, confirmButtonText: 'Tamam', customClass: { confirmButton: 'btn btn-primary' } });
             } else if (data.sonuc === 'refhata') {
               Swal.fire({ text: 'Davet kodu geçersiz.', icon: 'error', buttonsStyling: false, confirmButtonText: 'Tamam', customClass: { confirmButton: 'btn btn-primary' } });
+            } else if (data.sonuc === 'eslesmiyor') {
+              Swal.fire({ text: 'Şifreler eşleşmiyor.', icon: 'warning', buttonsStyling: false, confirmButtonText: 'Tamam', customClass: { confirmButton: 'btn btn-primary' } });
+            } else if (data.sonuc === 'gecersiz_kullaniciadi') {
+              Swal.fire({ text: 'Kullanıcı adı yalnızca harf/rakam/alt çizgi içermeli (3-32 karakter).', icon: 'warning', buttonsStyling: false, confirmButtonText: 'Tamam', customClass: { confirmButton: 'btn btn-primary' } });
             } else if (data.sonuc === 'bos') {
               Swal.fire({ text: 'Lütfen tüm alanları doldur.', icon: 'warning', buttonsStyling: false, confirmButtonText: 'Tamam', customClass: { confirmButton: 'btn btn-primary' } });
             } else {

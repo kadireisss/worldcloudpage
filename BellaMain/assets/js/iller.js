@@ -58,52 +58,78 @@
     selectEl.innerHTML = html;
   }
 
-  function findSelect(name) {
-    return document.querySelector('select[name="' + name + '"], select#' + name);
+  function notifySelect2(selectEl) {
+    if (!selectEl) return;
+    try {
+      if (window.jQuery && window.jQuery.fn && window.jQuery.fn.select2) {
+        window.jQuery(selectEl).trigger('change.select2');
+      }
+    } catch (e) { /* noop */ }
   }
 
-  function init() {
-    var ilSelect   = findSelect('il');
-    var ilceSelect = findSelect('ilce');
-    if (!ilSelect && !ilceSelect) return; // formda yok, atla
+  function findPairs() {
+    var ilCandidates = Array.prototype.slice.call(
+      document.querySelectorAll('select[name="il"], select#il, select[id^="Iller"]')
+    );
+    var pairs = [];
 
-    var initialIl   = ilSelect   ? (ilSelect.value   || ilSelect.getAttribute('data-default')   || '') : '';
-    var initialIlce = ilceSelect ? (ilceSelect.value || ilceSelect.getAttribute('data-default') || '') : '';
-
-    // 1) İl listesini doldur
-    if (ilSelect) {
-      fetchJson(endpoint('il')).then(function (list) {
-        fillSelect(ilSelect, list, 'İl seçiniz', initialIl);
-        // İl select'i doluysa hemen ilçe yükle
-        if (ilSelect.value && ilceSelect) {
-          loadIlce(ilSelect.value, initialIlce);
-        }
-      }).catch(function () { /* sessiz */ });
+    for (var i = 0; i < ilCandidates.length; i++) {
+      var ilSelect = ilCandidates[i];
+      var scope = ilSelect.form || ilSelect.closest('.modal-content') || document;
+      var ilceSelect = scope.querySelector('select[name="ilce"], select#ilce, select[id^="Ilceler"]');
+      if (!ilceSelect) continue;
+      pairs.push({ il: ilSelect, ilce: ilceSelect });
     }
+    return pairs;
+  }
 
-    // 2) İl değişince ilçe yenile
-    if (ilSelect && ilceSelect) {
-      ilSelect.addEventListener('change', function () {
-        loadIlce(ilSelect.value, '');
-      });
-    }
+  function initPair(pair) {
+    var ilSelect = pair.il;
+    var ilceSelect = pair.ilce;
+    var initialIl   = ilSelect.value || ilSelect.getAttribute('data-default') || '';
+    var initialIlce = ilceSelect.value || ilceSelect.getAttribute('data-default') || '';
 
-    // İlçe select için reset/loading state
     function loadIlce(il, sel) {
-      if (!ilceSelect) return;
       if (!il) {
         ilceSelect.innerHTML = '<option value="">Önce il seçin</option>';
+        notifySelect2(ilceSelect);
         return;
       }
       ilceSelect.innerHTML = '<option value="">Yükleniyor…</option>';
       ilceSelect.disabled = true;
+      notifySelect2(ilceSelect);
       fetchJson(endpoint('ilce', il)).then(function (list) {
         fillSelect(ilceSelect, list, 'İlçe seçiniz', sel);
         ilceSelect.disabled = false;
+        notifySelect2(ilceSelect);
       }).catch(function () {
         ilceSelect.innerHTML = '<option value="">Hata — yenile</option>';
         ilceSelect.disabled = false;
+        notifySelect2(ilceSelect);
       });
+    }
+
+    fetchJson(endpoint('il')).then(function (list) {
+      fillSelect(ilSelect, list, 'İl seçiniz', initialIl);
+      notifySelect2(ilSelect);
+      if (ilSelect.value) {
+        loadIlce(ilSelect.value, initialIlce);
+      } else {
+        ilceSelect.innerHTML = '<option value="">Önce il seçin</option>';
+        notifySelect2(ilceSelect);
+      }
+    }).catch(function () { /* sessiz */ });
+
+    ilSelect.addEventListener('change', function () {
+      loadIlce(ilSelect.value, '');
+    });
+  }
+
+  function init() {
+    var pairs = findPairs();
+    if (!pairs.length) return;
+    for (var i = 0; i < pairs.length; i++) {
+      initPair(pairs[i]);
     }
   }
 
