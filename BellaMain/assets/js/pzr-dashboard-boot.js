@@ -5,317 +5,66 @@
 (function () {
   'use strict';
 
-  /** Bootstrap acik modal: DOM'da .show ama aria-hidden=true genelde takili kalintidir */
-  function pzrStripGhostModalShow() {
+  /**
+   * Sadece bilinen takili katmanlari temizle.
+   * Bilinmeyen elemanlara dokunma: aksi halde panel elemanlarini da kilitleyebilir.
+   */
+  function pzrCleanupKnownStaleLayers() {
     try {
-      document.querySelectorAll('.modal.show[aria-hidden="true"]').forEach(function (m) {
-        m.classList.remove('show');
-        m.style.removeProperty('display');
-        m.setAttribute('aria-hidden', 'true');
+      document.querySelectorAll('.modal-backdrop, .offcanvas-backdrop').forEach(function (el) {
+        if (!document.querySelector('.modal.show, .offcanvas.show')) {
+          el.remove();
+        }
       });
+      if (!document.querySelector('.modal.show, .offcanvas.show')) {
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('padding-right');
+        document.documentElement.style.removeProperty('overflow');
+      }
+
+      var swalContainer = document.querySelector('.swal2-container');
+      if (swalContainer && typeof Swal !== 'undefined' && typeof Swal.isVisible === 'function' && !Swal.isVisible()) {
+        swalContainer.remove();
+        document.body.classList.remove('swal2-shown', 'swal2-height-auto');
+      }
     } catch (e0) {}
   }
 
-  function pzrModalLayerOpen() {
-    try {
-      pzrStripGhostModalShow();
-      var list = document.querySelectorAll('.modal.show');
-      for (var i = 0; i < list.length; i++) {
-        var el = list[i];
-        if (el.getAttribute('aria-hidden') === 'true') continue;
-        try {
-          if (typeof bootstrap !== 'undefined' && bootstrap.Modal && bootstrap.Modal.getInstance) {
-            var inst = bootstrap.Modal.getInstance(el);
-            if (inst && typeof inst._isShown === 'boolean' && inst._isShown === false) continue;
-          }
-        } catch (e1) {}
-        var r = el.getBoundingClientRect();
-        if (r.width > 8 && r.height > 8) return true;
-      }
-    } catch (e2) {}
-    return false;
-  }
-
-  function pzrSwalOpen() {
-    try {
-      var byApi = typeof Swal !== 'undefined' && typeof Swal.isVisible === 'function' && Swal.isVisible();
-      var container = document.querySelector('.swal2-container');
-      if (!container) return !!byApi;
-
-      var cs = window.getComputedStyle(container);
-      if (!cs || cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity || 0) < 0.05) {
-        return false;
-      }
-
-      var popup = container.querySelector('.swal2-popup');
-      if (!popup) return !!byApi;
-
-      var ps = window.getComputedStyle(popup);
-      var popupVisible = !!ps && ps.display !== 'none' && ps.visibility !== 'hidden' && Number(ps.opacity || 0) > 0.05;
-      var popupShownClass = popup.classList.contains('swal2-show') || popup.classList.contains('swal2-popup');
-
-      return !!(byApi && popupVisible && popupShownClass);
-    } catch (e) {
-      return false;
-    }
-  }
-
-  /** Gercek modal / Swal acik degilse: backdrop, body kilidi, olusu Swal kalintisi temizle */
-  function pzrForceStaleOverlayCleanup() {
-    try {
-      pzrStripGhostModalShow();
-
-      if (pzrModalLayerOpen() || pzrSwalOpen()) return;
-
-      document.querySelectorAll('.modal-backdrop').forEach(function (el) {
-        el.remove();
-      });
-      document.querySelectorAll('.offcanvas-backdrop').forEach(function (el) {
-        el.remove();
-      });
-      document.body.classList.remove('modal-open');
-      document.body.style.removeProperty('overflow');
-      document.body.style.removeProperty('padding-right');
-      document.documentElement.style.removeProperty('overflow');
-
-      document.querySelectorAll('.modal.show').forEach(function (m) {
-        if (typeof bootstrap !== 'undefined' && bootstrap.Modal && bootstrap.Modal.getInstance) {
-          if (bootstrap.Modal.getInstance(m)) return;
-        }
-        m.classList.remove('show');
-        m.setAttribute('aria-hidden', 'true');
-      });
-
-      document.body.classList.remove('swal2-shown', 'swal2-height-auto');
-      document.querySelectorAll('.swal2-container').forEach(function (el) {
-        var popup = el.querySelector('.swal2-popup');
-        if (!popup) {
-          el.remove();
-          return;
-        }
-        var p = window.getComputedStyle(popup);
-        var hidden = !p || p.display === 'none' || p.visibility === 'hidden' || Number(p.opacity || 0) < 0.05;
-        if (hidden) el.remove();
-      });
-    } catch (e3) {}
-  }
-
-  /**
-   * Bazi eklentiler (veya yarim kalmis animasyonlar) viewport'u tamamen kaplayan
-   * fixed katman birakabiliyor. Gercek modal/swal yokken bu katmanlari devre disi birak.
-   */
-  function pzrNeutralizeUnknownBlockingLayers() {
-    try {
-      if (pzrModalLayerOpen() || pzrSwalOpen()) return;
-
-      var vw = window.innerWidth || document.documentElement.clientWidth || 0;
-      var vh = window.innerHeight || document.documentElement.clientHeight || 0;
-      if (!vw || !vh) return;
-
-      var all = document.body ? document.body.querySelectorAll('*') : [];
-      for (var i = 0; i < all.length; i++) {
-        var el = all[i];
-        if (!el || !el.getBoundingClientRect) continue;
-        if (el.classList && (el.classList.contains('modal') || el.classList.contains('modal-dialog'))) continue;
-        if (el.classList && (el.classList.contains('swal2-popup') || el.classList.contains('swal2-html-container'))) continue;
-
-        var cs = window.getComputedStyle(el);
-        if (!cs) continue;
-        if (cs.display === 'none' || cs.visibility === 'hidden') continue;
-        if (cs.position !== 'fixed' && cs.position !== 'sticky') continue;
-        if (cs.pointerEvents === 'none') continue;
-
-        var z = parseInt(cs.zIndex, 10);
-        if (!isFinite(z) || z < 1040) continue;
-
-        var r = el.getBoundingClientRect();
-        if (r.width < vw * 0.9 || r.height < vh * 0.9) continue;
-        if (r.top > 4 || r.left > 4) continue;
-
-        // Gercek acik modal/swal icerigine dokunma
-        if (el.closest && (el.closest('.modal.show') || el.closest('.swal2-container'))) continue;
-
-        el.style.setProperty('pointer-events', 'none', 'important');
-        el.style.setProperty('opacity', '0', 'important');
-      }
-    } catch (e4) {}
-  }
-
-  function pzrNeutralizeByHitTest() {
-    try {
-      if (pzrModalLayerOpen() || pzrSwalOpen()) return;
-      if (!document.body) return;
-
-      var vw = window.innerWidth || document.documentElement.clientWidth || 0;
-      var vh = window.innerHeight || document.documentElement.clientHeight || 0;
-      if (!vw || !vh) return;
-
-      var points = [
-        [Math.floor(vw * 0.2), Math.floor(vh * 0.3)],
-        [Math.floor(vw * 0.5), Math.floor(vh * 0.5)],
-        [Math.floor(vw * 0.8), Math.floor(vh * 0.7)],
-      ];
-
-      var hitCount = new Map();
-      for (var i = 0; i < points.length; i++) {
-        var p = points[i];
-        var topEl = document.elementFromPoint(p[0], p[1]);
-        if (!topEl) continue;
-        hitCount.set(topEl, (hitCount.get(topEl) || 0) + 1);
-      }
-
-      hitCount.forEach(function (count, el) {
-        if (count < 2) return;
-        if (!el || el === document.body || el === document.documentElement) return;
-        if (el.id === 'pzrDashRoot') return;
-        if (el.closest && (el.closest('.modal.show') || el.closest('.swal2-container'))) return;
-
-        var cs = window.getComputedStyle(el);
-        if (!cs) return;
-        if (cs.pointerEvents === 'none' || cs.display === 'none' || cs.visibility === 'hidden') return;
-
-        var z = parseInt(cs.zIndex, 10);
-        if (!isFinite(z)) z = 0;
-        if (z < 30 && cs.position !== 'fixed' && cs.position !== 'absolute' && cs.position !== 'sticky') return;
-
-        var r = el.getBoundingClientRect();
-        var coversLargeArea = r.width >= vw * 0.75 && r.height >= vh * 0.55;
-        if (!coversLargeArea) return;
-
-        var tag = (el.tagName || '').toUpperCase();
-        if (tag === 'BUTTON' || tag === 'A' || tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
-
-        el.style.setProperty('pointer-events', 'none', 'important');
-        el.style.setProperty('opacity', '0', 'important');
-      });
-    } catch (e5) {}
-  }
-
   function pzrUnblockPointerOverlays() {
-    pzrForceStaleOverlayCleanup();
-    pzrNeutralizeUnknownBlockingLayers();
-    pzrNeutralizeByHitTest();
-  }
-
-  function pzrResolveTargetModal(triggerEl) {
-    try {
-      if (!triggerEl) return null;
-      var selector = triggerEl.getAttribute('data-bs-target') || triggerEl.getAttribute('href') || '';
-      if (!selector || selector.charAt(0) !== '#') return null;
-      return document.querySelector(selector);
-    } catch (e0) {
-      return null;
-    }
-  }
-
-  function pzrShowModalFallback(modalEl) {
-    if (!modalEl) return;
-    modalEl.classList.add('show');
-    modalEl.style.display = 'block';
-    modalEl.removeAttribute('aria-hidden');
-    modalEl.setAttribute('aria-modal', 'true');
-    modalEl.setAttribute('role', 'dialog');
-    document.body.classList.add('modal-open');
-  }
-
-  function pzrHideModalFallback(modalEl) {
-    if (!modalEl) return;
-    modalEl.classList.remove('show');
-    modalEl.style.display = 'none';
-    modalEl.setAttribute('aria-hidden', 'true');
-    modalEl.removeAttribute('aria-modal');
-    if (!document.querySelector('.modal.show')) {
-      document.body.classList.remove('modal-open');
-    }
-    pzrUnblockPointerOverlays();
+    pzrCleanupKnownStaleLayers();
   }
 
   window.pzrUnblockPointerOverlays = pzrUnblockPointerOverlays;
-  window.pzrForceStaleOverlayCleanup = pzrForceStaleOverlayCleanup;
-
   pzrUnblockPointerOverlays();
   document.addEventListener('DOMContentLoaded', pzrUnblockPointerOverlays);
   window.addEventListener('load', pzrUnblockPointerOverlays);
-  [200, 500, 1200, 2500, 5000, 9000].forEach(function (ms) {
+  [300, 900, 1800, 3200].forEach(function (ms) {
     setTimeout(pzrUnblockPointerOverlays, ms);
   });
 
-  /* Takili tam ekran katman: modal/Swal yokken periyodik sok (hafif) */
+  // Bilinen stale overlay temizligi; DOM'a agressif dokunma yok.
   setInterval(function () {
-    if (pzrModalLayerOpen() || pzrSwalOpen()) return;
-    pzrForceStaleOverlayCleanup();
-    pzrNeutralizeUnknownBlockingLayers();
-    pzrNeutralizeByHitTest();
+    pzrCleanupKnownStaleLayers();
   }, 4000);
 
-  /* Ilk dokunusta backdrop / olu Swal konteyneri — tiklamayi yutan katman */
+  // Yalniz backdrop hedeflenirse temizle.
   document.addEventListener(
     'pointerdown',
     function (e) {
       var t = e.target;
       if (!t || !t.classList) return;
-      if (pzrModalLayerOpen() || pzrSwalOpen()) return;
-      if (t.classList.contains('modal-backdrop')) {
-        pzrForceStaleOverlayCleanup();
-        return;
+      if (t.classList.contains('modal-backdrop') || t.classList.contains('offcanvas-backdrop')) {
+        pzrCleanupKnownStaleLayers();
       }
-      if (t.classList.contains('swal2-container') || (t.closest && t.closest('.swal2-container'))) {
-        if (!pzrSwalOpen()) pzrForceStaleOverlayCleanup();
+      if (t.classList.contains('swal2-container')) {
+        if (!(typeof Swal !== 'undefined' && typeof Swal.isVisible === 'function' && Swal.isVisible())) {
+          pzrCleanupKnownStaleLayers();
+        }
       }
     },
     true
   );
-
-  /*
-   * Bootstrap data-api fallback:
-   * Eger herhangi bir nedenle bootstrap modal trigger calismazsa
-   * data-bs-toggle=modal tiklamasindan hemen sonra manuel ac.
-   */
-  document.addEventListener(
-    'click',
-    function (e) {
-      var trigger = e.target && e.target.closest ? e.target.closest('[data-bs-toggle="modal"]') : null;
-      if (!trigger) return;
-
-      var modal = pzrResolveTargetModal(trigger);
-      if (!modal) return;
-
-      setTimeout(function () {
-        var isOpen = modal.classList.contains('show') && modal.style.display !== 'none';
-        if (isOpen) return;
-        pzrShowModalFallback(modal);
-      }, 90);
-    },
-    true
-  );
-
-  document.addEventListener(
-    'click',
-    function (e) {
-      var closeBtn = e.target && e.target.closest ? e.target.closest('[data-bs-dismiss="modal"]') : null;
-      if (!closeBtn) return;
-      var modal = closeBtn.closest ? closeBtn.closest('.modal') : null;
-      if (!modal) return;
-      pzrHideModalFallback(modal);
-    },
-    true
-  );
-
-  document.addEventListener(
-    'click',
-    function (e) {
-      var modal = e.target && e.target.classList && e.target.classList.contains('modal') ? e.target : null;
-      if (!modal || !modal.classList.contains('show')) return;
-      pzrHideModalFallback(modal);
-    },
-    true
-  );
-
-  document.addEventListener('keydown', function (e) {
-    if (e.key !== 'Escape') return;
-    var active = document.querySelector('.modal.show');
-    if (active) pzrHideModalFallback(active);
-  });
 
   /* ====== Mobil sidebar ====== */
   (function () {

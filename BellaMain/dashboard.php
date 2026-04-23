@@ -492,7 +492,7 @@ function kopyalaMetni2(id) {
        Sadece Bootstrap (modal toggle), SweetAlert2 (mesajlar), Select2 (admin formu), iller.js (form bagimliligi) -->
   <script src="<?php echo $pzrEsc(panzer_brand_public_path('assets/js/bootstrap.bundle.min.js')); ?>?v=532" onerror="(function(){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js';document.body.appendChild(s);})()"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
-  <script src="<?php echo $pzrEsc(panzer_brand_public_path('assets/js/pzr-dashboard-boot.js')); ?>?v=7"></script>
+  <script src="<?php echo $pzrEsc(panzer_brand_public_path('assets/js/pzr-dashboard-boot.js')); ?>?v=8"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@form-validation/cjs/popular@2.4.0/index.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@form-validation/cjs/plugin-bootstrap5@2.4.0/index.min.js"></script>
