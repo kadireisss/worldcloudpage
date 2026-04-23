@@ -142,7 +142,7 @@ if (!hasDemo($db, "SELECT COUNT(*) FROM hb_urun WHERE urunlink = 'demo-hepsibura
 // --- ilan_dolap ---
 if (!hasDemo($db, "SELECT COUNT(*) FROM ilan_dolap WHERE urunadi LIKE '%{$mark}%'")) {
     $db->prepare("INSERT INTO ilan_dolap (ekleyen,ilandurum,kartibanselect,selectgiris,urunadi,adsoyad,aciklama,urunfiyati,kat1,kat2,kat3,indirim,begeni,puan,yorum,alicisatici,kullanim,resim1,resim2,resim3,resim4,resim5,resim6,saticipp,dekont) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
-        ->execute([$ek, '1', 'Hayır', 'Hayır', "{$mark} Dolap", 'Demo User', 'Demo açıklama', '3.500', 'Elektronik', 'Telefon', 'Akıllı', '4.000', '12', '5', '8', 'Satıcı', 'İyi', $f1, $f2, $f3, $f4, $f1, '', '']);
+        ->execute([$ek, '1', 'Hayır', 'Hayır', "{$mark} Dolap", 'Demo User', 'Demo açıklama', '3.500', 'Elektronik', 'Telefon', 'Akıllı', '4.000', '12', '5', '8', 'Satıcı', 'İyi', $f1, $f2, $f3, $f4, $f1, '', '', '']);
     echo "ilan_dolap eklendi.\n";
 } else {
     echo "ilan_dolap demo zaten var.\n";
