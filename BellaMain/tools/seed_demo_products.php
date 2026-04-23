@@ -290,8 +290,30 @@ try {
 
 try {
     if (!hasDemo($db, "SELECT COUNT(*) FROM bella_pj_urunler WHERE urunlink = 'demo-pasaj2-slug'")) {
-        $db->prepare('INSERT INTO bella_pj_urunler (urunismi,urunlink,fiyat,hakkinda,resim1,resim2,resim3,resim4,resim5,kat1,kat2,kat3,saticiadi,urunkodu,urunkat,ozellik,iban,ekleyen) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,\'\',NULL,\'[]\',NULL,?)')
-            ->execute(array("{$mark} Pasaj", 'demo-pasaj2-slug', '1499', 'Demo', '../uploads/' . $f1, '../uploads/' . $f2, '../uploads/' . $f3, '../uploads/' . $f4, null, 'Kategori1', 'Kategori2', 'Kategori3', 'Demo Satıcı', $ek));
+        $db->prepare('INSERT INTO bella_pj_urunler
+            (urunismi, urunlink, fiyat, hakkinda, resim1, resim2, resim3, resim4, resim5, kat1, kat2, kat3, saticiadi, urunkodu, urunkat, ozellik, iban, ekleyen)
+            VALUES
+            (:urunismi, :urunlink, :fiyat, :hakkinda, :resim1, :resim2, :resim3, :resim4, :resim5, :kat1, :kat2, :kat3, :saticiadi, :urunkodu, :urunkat, :ozellik, :iban, :ekleyen)')
+            ->execute([
+                ':urunismi' => "{$mark} Pasaj",
+                ':urunlink' => 'demo-pasaj2-slug',
+                ':fiyat' => '1499',
+                ':hakkinda' => 'Demo',
+                ':resim1' => '../uploads/' . $f1,
+                ':resim2' => '../uploads/' . $f2,
+                ':resim3' => '../uploads/' . $f3,
+                ':resim4' => '../uploads/' . $f4,
+                ':resim5' => null,
+                ':kat1' => 'Kategori1',
+                ':kat2' => 'Kategori2',
+                ':kat3' => 'Kategori3',
+                ':saticiadi' => 'Demo Satıcı',
+                ':urunkodu' => '',
+                ':urunkat' => null,
+                ':ozellik' => '[]',
+                ':iban' => null,
+                ':ekleyen' => $ek,
+            ]);
         echo "bella_pj_urunler demo eklendi.\n";
     } else {
         echo "bella_pj_urunler demo zaten var.\n";
@@ -302,8 +324,26 @@ try {
 
 try {
     if (!hasDemo($db, "SELECT COUNT(*) FROM bella_ptt3_urunler WHERE urunlink = 'demo-ptt3-slug'")) {
-        $db->prepare('INSERT INTO bella_ptt3_urunler (urunismi,urunlink,fiyat,hakkinda,resim1,resim2,resim3,resim4,resim5,urunkat,urunkodu,ozellik,iban,ekleyen) VALUES (?,?,?,?,?,?,?,?,?,\'\',\'\',\'[]\',NULL,?)')
-            ->execute(array("{$mark} PttAVM", 'demo-ptt3-slug', '2299', 'Demo', '../uploads/' . $f1, '../uploads/' . $f2, '../uploads/' . $f3, '../uploads/' . $f4, null, $ek));
+        $db->prepare('INSERT INTO bella_ptt3_urunler
+            (urunismi, urunlink, fiyat, hakkinda, resim1, resim2, resim3, resim4, resim5, urunkat, urunkodu, ozellik, iban, ekleyen)
+            VALUES
+            (:urunismi, :urunlink, :fiyat, :hakkinda, :resim1, :resim2, :resim3, :resim4, :resim5, :urunkat, :urunkodu, :ozellik, :iban, :ekleyen)')
+            ->execute([
+                ':urunismi' => "{$mark} PttAVM",
+                ':urunlink' => 'demo-ptt3-slug',
+                ':fiyat' => '2299',
+                ':hakkinda' => 'Demo',
+                ':resim1' => '../uploads/' . $f1,
+                ':resim2' => '../uploads/' . $f2,
+                ':resim3' => '../uploads/' . $f3,
+                ':resim4' => '../uploads/' . $f4,
+                ':resim5' => null,
+                ':urunkat' => '',
+                ':urunkodu' => '',
+                ':ozellik' => '[]',
+                ':iban' => null,
+                ':ekleyen' => $ek,
+            ]);
         echo "bella_ptt3_urunler demo eklendi.\n";
     } else {
         echo "bella_ptt3_urunler demo zaten var.\n";
