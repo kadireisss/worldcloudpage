@@ -57,3 +57,36 @@ function bellla_avatar_img_html(?string $userimage, int $w = 40, int $h = 40, st
         json_encode($fallback, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT)
     );
 }
+
+/**
+ * İlan listesi küçük resmi — DB'de eksik/bozuk yol veya silinmiş dosya için güvenli URL + onerror yedeği.
+ * Tüm pazaryeri formları (sahibinden, dolap, letgo, pttavm, turkcell, shopier) bu fonksiyonu çağırır.
+ */
+function bellla_listing_img_html(?string $imagePath, int $w = 40, int $h = 40, string $extraClass = ''): string
+{
+    $raw = trim((string) $imagePath);
+    $fallback = bellla_avatar_placeholder_data_uri();
+
+    if ($raw === '') {
+        $src = $fallback;
+    } elseif (preg_match('#^https?://#i', $raw)) {
+        $src = $raw;
+    } elseif ($raw[0] === '/') {
+        $src = $raw;
+    } else {
+        $raw = str_replace(['../', '..\\'], '', $raw);
+        $raw = ltrim($raw, '/');
+        $src = (stripos($raw, 'images/') === 0) ? $raw : 'images/' . $raw;
+    }
+
+    $cls = trim('bellla-listing-img ' . $extraClass);
+
+    return sprintf(
+        '<img class="%s" src="%s" width="%d" height="%d" alt="" loading="lazy" decoding="async" style="object-fit:cover;border-radius:8px;" onerror="this.onerror=null;this.src=%s;">',
+        htmlspecialchars($cls, ENT_QUOTES, 'UTF-8'),
+        htmlspecialchars($src, ENT_QUOTES, 'UTF-8'),
+        $w,
+        $h,
+        json_encode($fallback, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT)
+    );
+}
