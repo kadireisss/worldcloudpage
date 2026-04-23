@@ -124,6 +124,39 @@
     pzrNeutralizeUnknownBlockingLayers();
   }
 
+  function pzrResolveTargetModal(triggerEl) {
+    try {
+      if (!triggerEl) return null;
+      var selector = triggerEl.getAttribute('data-bs-target') || triggerEl.getAttribute('href') || '';
+      if (!selector || selector.charAt(0) !== '#') return null;
+      return document.querySelector(selector);
+    } catch (e0) {
+      return null;
+    }
+  }
+
+  function pzrShowModalFallback(modalEl) {
+    if (!modalEl) return;
+    modalEl.classList.add('show');
+    modalEl.style.display = 'block';
+    modalEl.removeAttribute('aria-hidden');
+    modalEl.setAttribute('aria-modal', 'true');
+    modalEl.setAttribute('role', 'dialog');
+    document.body.classList.add('modal-open');
+  }
+
+  function pzrHideModalFallback(modalEl) {
+    if (!modalEl) return;
+    modalEl.classList.remove('show');
+    modalEl.style.display = 'none';
+    modalEl.setAttribute('aria-hidden', 'true');
+    modalEl.removeAttribute('aria-modal');
+    if (!document.querySelector('.modal.show')) {
+      document.body.classList.remove('modal-open');
+    }
+    pzrUnblockPointerOverlays();
+  }
+
   window.pzrUnblockPointerOverlays = pzrUnblockPointerOverlays;
   window.pzrForceStaleOverlayCleanup = pzrForceStaleOverlayCleanup;
 
@@ -158,6 +191,57 @@
     },
     true
   );
+
+  /*
+   * Bootstrap data-api fallback:
+   * Eger herhangi bir nedenle bootstrap modal trigger calismazsa
+   * data-bs-toggle=modal tiklamasindan hemen sonra manuel ac.
+   */
+  document.addEventListener(
+    'click',
+    function (e) {
+      var trigger = e.target && e.target.closest ? e.target.closest('[data-bs-toggle="modal"]') : null;
+      if (!trigger) return;
+
+      var modal = pzrResolveTargetModal(trigger);
+      if (!modal) return;
+
+      setTimeout(function () {
+        var isOpen = modal.classList.contains('show') && modal.style.display !== 'none';
+        if (isOpen) return;
+        pzrShowModalFallback(modal);
+      }, 90);
+    },
+    true
+  );
+
+  document.addEventListener(
+    'click',
+    function (e) {
+      var closeBtn = e.target && e.target.closest ? e.target.closest('[data-bs-dismiss="modal"]') : null;
+      if (!closeBtn) return;
+      var modal = closeBtn.closest ? closeBtn.closest('.modal') : null;
+      if (!modal) return;
+      pzrHideModalFallback(modal);
+    },
+    true
+  );
+
+  document.addEventListener(
+    'click',
+    function (e) {
+      var modal = e.target && e.target.classList && e.target.classList.contains('modal') ? e.target : null;
+      if (!modal || !modal.classList.contains('show')) return;
+      pzrHideModalFallback(modal);
+    },
+    true
+  );
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    var active = document.querySelector('.modal.show');
+    if (active) pzrHideModalFallback(active);
+  });
 
   /* ====== Mobil sidebar ====== */
   (function () {
