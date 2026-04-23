@@ -56,6 +56,7 @@ $tables = [
     'bella_ptt3_urunler',
     'bella_bim_products',
     'bella_a101_products',
+    'bella_pttkargo',
 ];
 
 foreach ($tables as $t) {

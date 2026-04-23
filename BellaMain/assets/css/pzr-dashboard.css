@@ -1268,13 +1268,31 @@ body.pzr-dash .select2-dropdown {
   border: 1px solid rgba(255, 255, 255, 0.14) !important;
 }
 
+body.pzr-dash .select2-container--open .select2-dropdown {
+  background: #10131b !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
 body.pzr-dash .select2-container--default .select2-results__option {
   color: #e8edf8 !important;
+}
+
+body.pzr-dash .select2-container--default .select2-results__option[aria-selected=true] {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
 }
 
 body.pzr-dash .select2-container--default .select2-results__option--highlighted[aria-selected] {
   background: rgba(255, 184, 0, 0.2) !important;
   color: #fff !important;
+}
+
+/* Native select fallback: browser dropdown listesinde yazi kaybolmasin */
+body.pzr-dash .modal.fade:not(.pzr-modal) select.form-select-solid option,
+body.pzr-dash .modal.fade:not(.pzr-modal) select.form-control-solid option,
+body.pzr-dash .modal.fade:not(.pzr-modal) select option {
+  color: #111827 !important;
+  background: #ffffff !important;
 }
 
 /* Tablolar/kart listeleri: daha okunabilir */

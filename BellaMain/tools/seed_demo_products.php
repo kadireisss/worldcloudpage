@@ -205,6 +205,39 @@ if ((int) $chk->fetchColumn() === 0) {
     echo "yurtici demo zaten var.\n";
 }
 
+// --- bella_pttkargo (2. kargo firmasi) ---
+try {
+    $demoTakip = 'BCSCPTT0001';
+    $chk = $db->prepare('SELECT COUNT(*) FROM bella_pttkargo WHERE takipno = ?');
+    $chk->execute([$demoTakip]);
+    if ((int) $chk->fetchColumn() === 0) {
+        $db->prepare('INSERT INTO bella_pttkargo
+            (takipno,gonderen,teslimalan,cikistarih,teslimtarih,cikisadres,teslimadres,telefonno,gonderil,alanil,sonuc,durumu,ekleyen)
+            VALUES
+            (:takipno,:gonderen,:teslimalan,:cikistarih,:teslimtarih,:cikisadres,:teslimadres,:telefonno,:gonderil,:alanil,:sonuc,:durumu,:ekleyen)')
+            ->execute([
+                ':takipno' => $demoTakip,
+                ':gonderen' => 'BCSC Demo Gonderen',
+                ':teslimalan' => 'BCSC Demo Alici',
+                ':cikistarih' => '19.04.2026',
+                ':teslimtarih' => '21.04.2026',
+                ':cikisadres' => 'Maslak Mah. Buyukdere Cd. No:1',
+                ':teslimadres' => 'Kizilay Mah. Ataturk Blv. No:20',
+                ':telefonno' => '05005556677',
+                ':gonderil' => 'Istanbul',
+                ':alanil' => 'Ankara',
+                ':sonuc' => 'Kargo transfer merkezinde isleme alindi.',
+                ':durumu' => 2,
+                ':ekleyen' => $ek,
+            ]);
+        echo "bella_pttkargo demo eklendi.\n";
+    } else {
+        echo "bella_pttkargo demo zaten var.\n";
+    }
+} catch (Throwable $e) {
+    fwrite(STDERR, 'bella_pttkargo demo: ' . $e->getMessage() . "\n");
+}
+
 $yeniSql = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'database' . DIRECTORY_SEPARATOR . 'bella_yeni_pazaryeri_tablolar.sql';
 if (is_file($yeniSql)) {
     $buffer = '';
