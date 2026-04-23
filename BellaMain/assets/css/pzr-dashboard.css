@@ -1113,6 +1113,47 @@ body.pzr-dash .modal.fade:not(.pzr-modal) .modal-content.rounded {
   background: linear-gradient(165deg, #151821 0%, #0c0e14 55%, #08090e 100%);
 }
 
+/* Pazaryeri modal header + close UX */
+body.pzr-dash .modal.fade:not(.pzr-modal) .modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  padding: 0.65rem 0.8rem 0.25rem;
+  background: linear-gradient(180deg, rgba(10, 12, 18, 0.96), rgba(10, 12, 18, 0.72) 80%, rgba(10, 12, 18, 0));
+  backdrop-filter: blur(8px);
+}
+
+body.pzr-dash .modal.fade:not(.pzr-modal) .modal-header .btn.btn-icon[data-bs-dismiss="modal"] {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  color: #e9ecf4;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .2s ease;
+}
+
+body.pzr-dash .modal.fade:not(.pzr-modal) .modal-header .btn.btn-icon[data-bs-dismiss="modal"] i {
+  display: none !important;
+}
+
+body.pzr-dash .modal.fade:not(.pzr-modal) .modal-header .btn.btn-icon[data-bs-dismiss="modal"]::before {
+  content: "×";
+  font-size: 1.5rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+body.pzr-dash .modal.fade:not(.pzr-modal) .modal-header .btn.btn-icon[data-bs-dismiss="modal"]:hover {
+  background: #c41e3a;
+  border-color: #c41e3a;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
 body.pzr-dash .modal.fade:not(.pzr-modal) .nav.nav-pills {
   flex-wrap: wrap;
   gap: 0.4rem;
@@ -1130,6 +1171,12 @@ body.pzr-dash .modal.fade:not(.pzr-modal) .tab-content.px-3 {
   padding-right: 0.5rem !important;
 }
 
+/* Form okunabilirlik ve hizalama */
+body.pzr-dash .modal.fade:not(.pzr-modal) .fv-row label,
+body.pzr-dash .modal.fade:not(.pzr-modal) .fv-row .required {
+  color: #dfe5f2 !important;
+}
+
 body.pzr-dash .modal.fade:not(.pzr-modal) .row {
   --bs-gutter-x: 1rem;
   --bs-gutter-y: 0.65rem;
@@ -1143,8 +1190,92 @@ body.pzr-dash .modal.fade:not(.pzr-modal) .mb-13 {
 body.pzr-dash .modal.fade:not(.pzr-modal) .form-control-solid,
 body.pzr-dash .modal.fade:not(.pzr-modal) .form-select-solid {
   min-height: 42px;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #eef1f9 !important;
+  border-radius: 10px !important;
+}
+
+body.pzr-dash .modal.fade:not(.pzr-modal) .form-control-solid::placeholder {
+  color: rgba(214, 223, 240, 0.5);
+}
+
+body.pzr-dash .modal.fade:not(.pzr-modal) .form-control-solid:focus,
+body.pzr-dash .modal.fade:not(.pzr-modal) .form-select-solid:focus {
+  border-color: rgba(255, 184, 0, 0.65) !important;
+  box-shadow: 0 0 0 3px rgba(255, 184, 0, 0.16) !important;
 }
 
 body.pzr-dash .modal.fade:not(.pzr-modal) .input-group-text {
   border-radius: 0 10px 10px 0;
+  background: rgba(255, 184, 0, 0.12) !important;
+  color: #ffd980 !important;
+  border-color: rgba(255, 184, 0, 0.24) !important;
+}
+
+/* Select2 koyu tema uyumu */
+body.pzr-dash .modal.fade:not(.pzr-modal) .select2-container .select2-selection--single {
+  min-height: 42px !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #eef1f9 !important;
+}
+
+body.pzr-dash .modal.fade:not(.pzr-modal) .select2-container--default .select2-selection--single .select2-selection__rendered {
+  color: #eef1f9 !important;
+  line-height: 40px !important;
+  padding-left: 12px !important;
+}
+
+body.pzr-dash .modal.fade:not(.pzr-modal) .select2-container--default .select2-selection--single .select2-selection__arrow {
+  height: 40px !important;
+  right: 8px !important;
+}
+
+body.pzr-dash .select2-dropdown {
+  background: #10131b !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+}
+
+body.pzr-dash .select2-container--default .select2-results__option {
+  color: #e8edf8 !important;
+}
+
+body.pzr-dash .select2-container--default .select2-results__option--highlighted[aria-selected] {
+  background: rgba(255, 184, 0, 0.2) !important;
+  color: #fff !important;
+}
+
+/* Tablolar/kart listeleri: daha okunabilir */
+body.pzr-dash .modal.fade:not(.pzr-modal) .table-responsive {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 0.35rem;
+}
+
+body.pzr-dash .modal.fade:not(.pzr-modal) table.table tr {
+  border-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+body.pzr-dash .modal.fade:not(.pzr-modal) table.table td,
+body.pzr-dash .modal.fade:not(.pzr-modal) table.table th {
+  vertical-align: middle;
+}
+
+body.pzr-dash .modal.fade:not(.pzr-modal) .btn.btn-sm.btn-icon {
+  border-radius: 9px !important;
+}
+
+/* Scrollbar kalitesi */
+body.pzr-dash .modal.fade:not(.pzr-modal) .modal-body.scroll-y::-webkit-scrollbar {
+  width: 9px;
+}
+body.pzr-dash .modal.fade:not(.pzr-modal) .modal-body.scroll-y::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+}
+body.pzr-dash .modal.fade:not(.pzr-modal) .modal-body.scroll-y::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 184, 0, 0.45);
 }
