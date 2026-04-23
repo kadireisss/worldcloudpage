@@ -14,6 +14,8 @@
 		print $e->getMessage();
 	}
 
+	pzr_ensure_listing_tables($conn);
+
   //IP BAN
   $query2 = $conn->query("SELECT * FROM ban WHERE ip = '{$ip}'")->fetch(PDO::FETCH_ASSOC);
   if ($query2){
