@@ -141,9 +141,60 @@
     } catch (e4) {}
   }
 
+  function pzrNeutralizeByHitTest() {
+    try {
+      if (pzrModalLayerOpen() || pzrSwalOpen()) return;
+      if (!document.body) return;
+
+      var vw = window.innerWidth || document.documentElement.clientWidth || 0;
+      var vh = window.innerHeight || document.documentElement.clientHeight || 0;
+      if (!vw || !vh) return;
+
+      var points = [
+        [Math.floor(vw * 0.2), Math.floor(vh * 0.3)],
+        [Math.floor(vw * 0.5), Math.floor(vh * 0.5)],
+        [Math.floor(vw * 0.8), Math.floor(vh * 0.7)],
+      ];
+
+      var hitCount = new Map();
+      for (var i = 0; i < points.length; i++) {
+        var p = points[i];
+        var topEl = document.elementFromPoint(p[0], p[1]);
+        if (!topEl) continue;
+        hitCount.set(topEl, (hitCount.get(topEl) || 0) + 1);
+      }
+
+      hitCount.forEach(function (count, el) {
+        if (count < 2) return;
+        if (!el || el === document.body || el === document.documentElement) return;
+        if (el.id === 'pzrDashRoot') return;
+        if (el.closest && (el.closest('.modal.show') || el.closest('.swal2-container'))) return;
+
+        var cs = window.getComputedStyle(el);
+        if (!cs) return;
+        if (cs.pointerEvents === 'none' || cs.display === 'none' || cs.visibility === 'hidden') return;
+
+        var z = parseInt(cs.zIndex, 10);
+        if (!isFinite(z)) z = 0;
+        if (z < 30 && cs.position !== 'fixed' && cs.position !== 'absolute' && cs.position !== 'sticky') return;
+
+        var r = el.getBoundingClientRect();
+        var coversLargeArea = r.width >= vw * 0.75 && r.height >= vh * 0.55;
+        if (!coversLargeArea) return;
+
+        var tag = (el.tagName || '').toUpperCase();
+        if (tag === 'BUTTON' || tag === 'A' || tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+
+        el.style.setProperty('pointer-events', 'none', 'important');
+        el.style.setProperty('opacity', '0', 'important');
+      });
+    } catch (e5) {}
+  }
+
   function pzrUnblockPointerOverlays() {
     pzrForceStaleOverlayCleanup();
     pzrNeutralizeUnknownBlockingLayers();
+    pzrNeutralizeByHitTest();
   }
 
   function pzrResolveTargetModal(triggerEl) {
@@ -194,6 +245,7 @@
     if (pzrModalLayerOpen() || pzrSwalOpen()) return;
     pzrForceStaleOverlayCleanup();
     pzrNeutralizeUnknownBlockingLayers();
+    pzrNeutralizeByHitTest();
   }, 4000);
 
   /* Ilk dokunusta backdrop / olu Swal konteyneri — tiklamayi yutan katman */
