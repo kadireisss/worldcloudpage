@@ -132,9 +132,8 @@
         if (r.width < vw * 0.9 || r.height < vh * 0.9) continue;
         if (r.top > 4 || r.left > 4) continue;
 
-        // Uygulamamiz ana kokleri ve gercek icerik katmanlari asla devre disi birakma
-        if (el.id === 'pzrDashRoot') continue;
-        if (el.closest && (el.closest('#pzrDashRoot') || el.closest('.modal.show') || el.closest('.swal2-container'))) continue;
+        // Gercek acik modal/swal icerigine dokunma
+        if (el.closest && (el.closest('.modal.show') || el.closest('.swal2-container'))) continue;
 
         el.style.setProperty('pointer-events', 'none', 'important');
         el.style.setProperty('opacity', '0', 'important');
