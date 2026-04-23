@@ -13,7 +13,7 @@
 
     try {
       $dbh = new PDO($dsn, $user, $password);
-      $dbh->exec("SET NAMES 'utf8'; SET CHARSET 'utf8'");
+      $dbh->exec("SET NAMES 'utf8'");
     } catch (PDOException $e) {
         print $e->getMessage();
     }

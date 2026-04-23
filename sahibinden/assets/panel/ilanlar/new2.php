@@ -4,7 +4,7 @@ header( 'Content-Type: application/json' );
 
 try {
     $conn = new PDO($dsn, $user, $password);
-    $conn->exec("SET NAMES 'utf8'; SET CHARSET 'utf8'");
+    $conn->exec("SET NAMES 'utf8'");
 } catch (PDOException $e) {
     print $e->getMessage();
 }
